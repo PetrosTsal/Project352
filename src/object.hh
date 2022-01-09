@@ -10,8 +10,9 @@
 
 #define let auto
 #define none 0
+#define object Object()
 
-using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT
+using var_t = std::variant<int, double, std::string, bool>; // NA PROSTHESOYME OBJECT
 
 class value{
 
@@ -19,21 +20,52 @@ class value{
 
 public:
 
-    friend value operator,(var_t val);
-        
+    value(){}
+
+    var_t qFront(){
+        if(!values.empty()){
+            var_t tmp = values.front();
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+            values.pop();
+            return tmp;
+        }
+        else return 0;
+    }
+
+    void printVal(){
+        std::queue<var_t> values2 = values;
+        if (values.empty())
+            std::cout << "DE gemizei to values" << std::endl;
+        while(!values2.empty()){
+            var_t tmp = values2.front();
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+           std:: cout << std::endl;
+            values2.pop();
+        }
+        return;
+    }
+
+    friend value operator,(value val, var_t var);
+
 };
 
-    value operator,(var_t val){
+value operator,(value val, var_t var){
 
-        value.values.push(val);
-        re
-    }
+        var_t tmp ;
+        val.values.push(var);
+        tmp = val.values.front();
+        std::cout << "Operator," << std::endl;
+        std::visit([](const auto &y){std::cout << y;}, tmp);
+
+        return val;
+}
+
 
 /**  */
 class Object{
 
     /**  */
-    std::unordered_map<std::string, std::variant<int, double, std::string, bool, Object, void*>> values_umap;
+    std::map<std::string, var_t> values_map;
 
 
 public:
@@ -56,29 +88,37 @@ public:
 
     Object operator[](value val){
 
-
-        val.values
-
-        Object.map
-
-        // return object.some_container[str];
+        Object obj = *this;
+        int j = 0 ;
+        var_t tmpv;
+        std::string tmp = std::to_string(j);
+        val.printVal();
+        while((tmpv = val.qFront()) != (var_t)0){
+            tmp = std::to_string(j);
+            values_map.insert({tmp, tmpv});
+            j++;
+        }
+        
+        std::cout << "Operator[]" << std::endl;
+        return obj;
     }
 
-    Object operator[](boost::variant<key, value> k){
+    void printObject(){
+        
+        if(values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
 
-        return Object;
+        for(auto x = values_map.begin(); x != values_map.end(); x++){
+            var_t tmp = x->second;
+            std::cout << "{" << x->first << ", ";
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+            std::cout << "}" << std::endl;
+
+        }
+
     }
 };
 
-Object operator[](values val){
+//Object g_object;
+value g_value;
 
-}
-
-int main(){
-
-    let x = a[value val];
-    let y = object[value val1];
-
-    Object a = Object();
-    a[5];
-}
+#define values g_value,

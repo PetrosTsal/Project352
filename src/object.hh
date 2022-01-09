@@ -1,42 +1,39 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <string>
+#include <variant>
 #include <cstdarg>
 #include <iterator>
 #include <map>
 #include <unordered_map>
-#include <boost/variant.hpp>
 
 #define let auto
-#define none ...
-#define object a
-// #define values "v",
+#define none 0
 
-Object a = Object();
-
-class key{
-
-
-    
-}
+using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT
 
 class value{
 
-    std::stack<boost::variant<....>>values;
+    std::queue<var_t> values;
 
 public:
-    value operator,(boost::variant val){
+
+    friend value operator,(var_t val);
+        
+};
+
+    value operator,(var_t val){
 
         value.values.push(val);
-
+        re
     }
-}
 
 /**  */
 class Object{
 
     /**  */
-    std::unordered_map<std::string, boost::variant<int, double, std::string, bool, Object, void*>> values_umap;
+    std::unordered_map<std::string, std::variant<int, double, std::string, bool, Object, void*>> values_umap;
 
 
 public:
@@ -66,8 +63,16 @@ public:
 
         // return object.some_container[str];
     }
+
+    Object operator[](boost::variant<key, value> k){
+
+        return Object;
+    }
 };
 
+Object operator[](values val){
+
+}
 
 int main(){
 

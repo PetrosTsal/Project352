@@ -1,69 +1,31 @@
-#include <iostream>
-#include <vector>
 #include <string>
-#include <cstdarg>
-#include <iterator>
-#include <map>
-#include <unordered_map>
-#include <boost/variant.hpp>
+#include <vector>
+#include <iostream>
 
-#define let auto
-#define none ...
-#define object Object
-// #define values value
-// #define values "v",
+class Key{
 
-
-
-
-class value{
-
-    
-    std::vector<boost::variant<int, float>> values;
+    std::string key;
+    int value;
 
 public:
-    value operator,(boost::variant val){
 
-        value.values.push(val);
+    Key(){}
 
-    }
-};
-
-/**  */
-class Object{
-
-    /**  */
-    std::unordered_map<std::string, boost::variant<int, double, std::string, bool, Object, void*>> values_umap;
-
-
-public:
-    /**  */
-    Object(){
-
-        std::cout << "AN EMPTY OBJECT" << std::endl;
-
+    Key operator()(std::string key){
+        this->key = key;
+        return *this;
     }
     
-    /**  */
-    Object(int a){
-
+    Key operator=(int value){
+        this->value = value;
+        std::cout << "Operator=" << this->value;
+        return *this;
     }
 
-    /**  */
-    ~Object(){
+    std::string getKey(){return this->key;}
 
-    }
-
-    Object operator[](value val){
-
-
-        val.values
-
-        Object.map
-
-        // return object.some_container[str];
-    }
+    int getValue(){return this->value;}
 };
 
-
-
+Key g_Key;
+std::vector<Key> g_Keys;

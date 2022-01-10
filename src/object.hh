@@ -12,7 +12,9 @@
 #define none 0
 #define object Object()
 
-using var_t = std::variant<int, double, std::string, bool>; // NA PROSTHESOYME OBJECT
+class Object;
+
+using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
 
 class value{
 
@@ -60,6 +62,19 @@ value operator,(value val, var_t var){
         return val;
 }
 
+class key{
+
+    std::string id;
+    var_t value;
+
+public:
+
+    key(std::string id){
+        this->id = id;
+    }
+
+};
+
 
 /**  */
 class Object{
@@ -73,11 +88,6 @@ public:
     Object(){
 
         std::cout << "AN EMPTY OBJECT" << std::endl;
-
-    }
-    
-    /**  */
-    Object(int a){
 
     }
 
@@ -101,6 +111,12 @@ public:
         
         std::cout << "Operator[]" << std::endl;
         return obj;
+    }
+
+    Object operator[](key k){
+
+
+
     }
 
     void printObject(){

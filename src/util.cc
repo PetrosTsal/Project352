@@ -1,14 +1,12 @@
 #include "util.hh"
 #include <iostream>
 
-#define key(x) g_Key(x)
-
-
-
 int main(){
 
-    key("a") = 5;
-    std::cout << "Key: " << g_Key.getKey() << " Value: " << g_Key.getValue() << std::endl;
+    key("a") = 5, key("b") = 4;
+
+    g_Key.print_map();
+
     return 0;
 }
 

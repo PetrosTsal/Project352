@@ -1,31 +1,53 @@
 #include <string>
 #include <vector>
+#include <variant>
+#include <map>
 #include <iostream>
+
+using var_t = std::variant<int, double, std::string, bool, void*>;
 
 class Key{
 
-    std::string key;
-    int value;
-
 public:
+
+    std::map<std::string, var_t> keys_map;
+    std::string key;
+    var_t value;
 
     Key(){}
 
-    Key operator()(std::string key){
-        this->key = key;
+    Key operator()(std::string k){
+        this->key = k;
         return *this;
     }
     
-    Key operator=(int value){
+    Key operator=(var_t value){
         this->value = value;
-        std::cout << "Operator=" << this->value;
         return *this;
     }
 
-    std::string getKey(){return this->key;}
+    Key operator,(Key add){
+        g_Key.keys_map.insert({add.key, add.value});
+        return *this;
+    }
 
-    int getValue(){return this->value;}
+    void print_map(){
+
+        var_t tmp;
+
+        for(auto it = this->keys_map.cbegin(); it != this->keys_map.cend(); ++it){
+            std::cout << it->first << " ";
+            tmp = it->second;
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+            std::cout << std::endl;
+        }
+
+        return;
+    }
 };
 
 Key g_Key;
-std::vector<Key> g_Keys;
+
+#define key(x) g_Key(x)
+
+

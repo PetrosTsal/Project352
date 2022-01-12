@@ -7,6 +7,7 @@
 #include <iterator>
 #include <map>
 #include <unordered_map>
+#include "util.hh"
 
 #define let auto
 #define none 0
@@ -62,25 +63,14 @@ value operator,(value val, var_t var){
         return val;
 }
 
-class key{
-
-    std::string id;
-    var_t value;
-
-public:
-
-    key(std::string id){
-        this->id = id;
-    }
-
-};
-
 
 /**  */
 class Object{
 
     /**  */
     std::map<std::string, var_t> values_map;
+    var_t value1;
+    std::string index;
 
 
 public:
@@ -94,6 +84,29 @@ public:
     /**  */
     ~Object(){
 
+    }
+
+    Object operator[](std::string key){
+        this->index = key;
+        return *this;
+    }
+
+    void operator=(var_t val){
+        std::cout << "index: " << this->index << std::endl;
+        std::cout <<"Operator = in Object " ;
+        std::visit([](const auto &y){std::cout << y;}, val);
+        std::cout << std::endl;
+
+        std::map<std::string, var_t>::iterator itr = values_map.find(index);
+
+        std::visit([](const auto &y){std::cout << y;}, itr->second);        
+
+        if (itr != values_map.end())
+            itr->second = val;
+        
+        std::visit([](const auto &y){std::cout << y;}, values_map[index]);
+
+        return;
     }
 
     Object operator[](value val){
@@ -113,26 +126,25 @@ public:
         return obj;
     }
 
-    Object operator[](key k){
+    Object operator[](std::map<std::string, var_t> keysMap){
 
-
-
+        values_map = keys_map;
+        return *this;
     }
 
-    void printObject(){
-        
-        if(values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
-
-        for(auto x = values_map.begin(); x != values_map.end(); x++){
-            var_t tmp = x->second;
-            std::cout << "{" << x->first << ", ";
-            std::visit([](const auto &y){std::cout << y;}, tmp);
-            std::cout << "}" << std::endl;
-
-        }
-
-    }
+    friend void printObject(Object o);
 };
+
+void printObject(Object o){
+        
+    if(o.values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
+
+    for(auto x = o.values_map.begin(); x != o.values_map.end(); x++){
+        std::cout << "{" << x->first << ", ";
+        std::visit([](auto &y){std::cout << y;}, x->second);
+        std::cout << "}" << std::endl;
+    }
+}
 
 //Object g_object;
 value g_value;

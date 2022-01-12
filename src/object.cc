@@ -2,19 +2,20 @@
 
 
 int main(){
-
     
     let a = object;
     Object b;
     b[values 1, 3.14, "hello", true, &a];
-    b.printObject();
+    //b.printObject();
 
-    Object c;
-    c[  key("a") = 5,
-        key("b") = 3.14,
-        key("c") = "hello"];
-    
+    b["2"] = 25;
+
+    printObject(b);
 
     return 0;
 }
+
+
+
+
 

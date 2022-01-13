@@ -13,9 +13,9 @@
 #define none 0
 #define object Object()
 
-class Object;
 
-using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
+//using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
+
 
 class value{
 
@@ -62,7 +62,6 @@ value operator,(value val, var_t var){
 
         return val;
 }
-
 
 /**  */
 class Object{
@@ -128,7 +127,7 @@ public:
 
     Object operator[](std::map<std::string, var_t> keysMap){
 
-        values_map = keys_map;
+        values_map = keysMap;
         return *this;
     }
 

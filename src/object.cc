@@ -1,5 +1,7 @@
 #include "object.hh"
 
+#define lambda [](void)
+#define func(x) key(x)=lambda
 
 int main(){
     
@@ -8,14 +10,22 @@ int main(){
     b[values 1, 3.14, "hello", true, &a];
     //b.printObject();
 
-    b["2"] = 25;
+    //b["2"] = 25;
 
-    printObject(b);
+    a[  key("c") = 1,
+        func("d"){return 1;}];
+
+    printObject(a);
+
+
+    //printObject(b);
+
+
 
     return 0;
 }
 
-
+// Kainourgio Key operator=(functional) kai ena map me keys kai functions 
 
 
 

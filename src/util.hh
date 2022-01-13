@@ -3,8 +3,9 @@
 #include <variant>
 #include <map>
 #include <iostream>
+#include <functional>
 
-using var_t = std::variant<int, double, std::string, bool, void*>;
+using var_t = std::variant<int, double, std::string, bool, void*, std::function<var_t>>;
 
 std::map<std::string, var_t> keys_map;
 
@@ -51,5 +52,3 @@ public:
 Key g_Key;
 
 #define key(x) g_Key(x)
-
-

@@ -5,9 +5,10 @@
 #include <iostream>
 #include <functional>
 
-using var_t = std::variant<int, double, std::string, bool, void*, std::function<var_t>>;
+using var_t = std::variant<int, double, std::string, bool, void*>;
 
 std::map<std::string, var_t> keys_map;
+std::map<std::string ,var_t> funcs_map ; 
 
 class Key{
 
@@ -34,6 +35,12 @@ public:
     //     return *this;
     // }
 
+    std::map<std::string, var_t> operator=(std::function<var_t()> f){
+        this->value = f(); 
+        funcs_map.insert({this->key, this->value});
+        return funcs_map;
+    }
+
     void print_map(){
 
         var_t tmp;
@@ -45,10 +52,27 @@ public:
             std::cout << std::endl;
         }
 
+        for(auto it = funcs_map.cbegin(); it != funcs_map.cend(); ++it){
+
+            std::cout <<"func(" << it->first << ")";
+            tmp = it->second;
+            std::cout <<"with estimated value = ";
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+            std::cout << std::endl;
+        }
+
+    
         return;
     }
+
+    
 };
 
 Key g_Key;
 
 #define key(x) g_Key(x)
+
+
+#define lambda [](void)
+#define func(x) key(x)=lambda
+

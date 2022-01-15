@@ -1,7 +1,5 @@
 #include "object.hh"
 
-#define lambda [](void)
-#define func(x) key(x)=lambda
 
 int main(){
     
@@ -14,6 +12,7 @@ int main(){
 
     a[  key("c") = 1,
         func("d"){return 1;}];
+    //key("d") = [](){return 1;}
 
     printObject(a);
 

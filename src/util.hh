@@ -35,11 +35,7 @@ public:
     //     return *this;
     // }
 
-    std::map<std::string, var_t> operator=(std::function<var_t()> f){
-        this->value = f(); 
-        funcs_map.insert({this->key, this->value});
-        return funcs_map;
-    }
+    
 
     void print_map(){
 
@@ -66,6 +62,41 @@ public:
     }
 
     
+};
+
+class Func{
+
+    std::string key;
+    var_t value;
+
+public: 
+    Func() {
+
+    }
+
+    Func operator()(std::string k){
+        this->key = k;
+        return *this;
+    }
+
+    std::map<std::string, var_t> operator=(std::function<var_t()> f){
+        this->value = f(); 
+        funcs_map.insert({this->key, this->value});
+        return funcs_map;
+    }
+
+    void print_map(){
+        var_t tmp ; 
+        for(auto it = funcs_map.cbegin(); it != funcs_map.cend(); ++it){
+
+            std::cout <<"func(" << it->first << ")";
+            tmp = it->second;
+            std::cout <<"with estimated value = ";
+            std::visit([](const auto &y){std::cout << y;}, tmp);
+            std::cout << std::endl;
+        }
+        return;
+    }
 };
 
 Key g_Key;

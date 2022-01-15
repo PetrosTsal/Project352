@@ -8,7 +8,6 @@
 using var_t = std::variant<int, double, std::string, bool, void*>;
 
 std::map<std::string, var_t> keys_map;
-std::map<std::string ,var_t> funcs_map ; 
 
 class Key{
 
@@ -37,29 +36,19 @@ public:
 
     
 
-    void print_map(){
+    // void print_map(){
 
-        var_t tmp;
+    //     var_t tmp;
 
-        for(auto it = keys_map.cbegin(); it != keys_map.cend(); ++it){
-            std::cout << it->first << " ";
-            tmp = it->second;
-            std::visit([](const auto &y){std::cout << y;}, tmp);
-            std::cout << std::endl;
-        }
-
-        for(auto it = funcs_map.cbegin(); it != funcs_map.cend(); ++it){
-
-            std::cout <<"func(" << it->first << ")";
-            tmp = it->second;
-            std::cout <<"with estimated value = ";
-            std::visit([](const auto &y){std::cout << y;}, tmp);
-            std::cout << std::endl;
-        }
-
+    //     for(auto it = keys_map.cbegin(); it != keys_map.cend(); ++it){
+    //         std::cout << it->first << " ";
+    //         tmp = it->second;
+    //         std::visit([](const auto &y){std::cout << y;}, tmp);
+    //         std::cout << std::endl;
+    //     }
     
-        return;
-    }
+    //     return;
+    // }
 
     
 };
@@ -81,21 +70,8 @@ public:
 
     std::map<std::string, var_t> operator=(std::function<var_t()> f){
         this->value = f(); 
-        funcs_map.insert({this->key, this->value});
-        return funcs_map;
-    }
-
-    void print_map(){
-        var_t tmp ; 
-        for(auto it = funcs_map.cbegin(); it != funcs_map.cend(); ++it){
-
-            std::cout <<"func(" << it->first << ")";
-            tmp = it->second;
-            std::cout <<"with estimated value = ";
-            std::visit([](const auto &y){std::cout << y;}, tmp);
-            std::cout << std::endl;
-        }
-        return;
+        keys_map.insert({this->key, this->value});
+        return keys_map;
     }
 };
 

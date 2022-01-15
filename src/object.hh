@@ -83,15 +83,6 @@ public:
     }
 
     void operator=(var_t val){
-        
-        // if(!assign_idx.empty()){
-        //     this->values_map[assign_idx] = val;
-        //     std::cout <<"{" <<this->assign_idx <<",";
-        //     std::visit([](const auto &y){std::cout << y;}, val);
-        //     std::cout   <<"}" <<std::endl;
-        //     assign_idx.clear();
-        //     return;
-        // }
 
         std::cout << "index: " << this->assign_idx << std::endl;
         std::cout <<"Operator = in Object " ;

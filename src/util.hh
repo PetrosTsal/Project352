@@ -100,10 +100,13 @@ public:
 };
 
 Key g_Key;
+Func g_Func;
 
 #define key(x) g_Key(x)
+//#define g_Func(x) g_Func(x)
 
 
 #define lambda [](void)
-#define func(x) key(x)=lambda
+#define func(x) g_Func(x)=lambda
+//comment
 

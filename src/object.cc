@@ -11,12 +11,16 @@ int main(){
     //b["2"] = 25;
 
     a[  key("c") = 1,
-        func("a"){return 1;}
+        func("a"){eval("ok");return 1;}
+
     ];
 
     a["c"] = 2;
     //key("d") = [](){return 1;}
-    printObject(a);
+    a["c"] = 3;
+
+
+    a.printObject();
 
 
     //printObject(b);
@@ -27,6 +31,3 @@ int main(){
 }
 
 // Kainourgio Key operator=(functional) kai ena map me keys kai functions 
-
-
-

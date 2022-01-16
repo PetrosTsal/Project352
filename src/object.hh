@@ -15,7 +15,7 @@
 
 
 //using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
-
+std::vector<std::string> g_evals;
 
 class value{
 
@@ -68,11 +68,13 @@ class Object{
     std::map<std::string, var_t> values_map;
     var_t value1;
     std::string index, assign_idx;
+    std::vector<std::string> evals;
+    int communicate ;
 
 public:
     /**  */
     Object(){
-
+        this->communicate = 0 ;
         std::cout << "AN EMPTY OBJECT" << std::endl;
 
     }
@@ -89,15 +91,24 @@ public:
         std::visit([](const auto &y){std::cout << y;}, val);
         std::cout << std::endl;
 
-        std::map<std::string, var_t>::iterator itr = values_map.find(assign_idx);
+        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
+            std::cout << "{" << x->first << ", ";
+            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
+            std::cout << "}" << std::endl;
+        }
 
-        std::visit([](const auto &y){std::cout << y;}, itr->second);        
+        std::map<std::string, var_t>::iterator itr = values_map.find(assign_idx);      
 
         if (itr != values_map.end())
             itr->second = val;
         
-        std::visit([](const auto &y){std::cout << y;}, this->values_map[assign_idx]);
-        assign_idx.clear();
+        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
+            std::cout << "{" << x->first << ", ";
+            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
+            std::cout << "}" << std::endl;
+        }
+
+        //assign_idx.clear();
 
         return;
     }
@@ -121,32 +132,50 @@ public:
     Object operator[](std::map<std::string, var_t> keysMap){
 
         values_map = keysMap;
+        evals = g_evals;
         keysMap.clear();
+        g_evals.clear();
         return *this;
     }
 
     Object operator[](std::string key){
+
         this->assign_idx = key;
         return *this;
     }
 
-    friend void printObject(Object o);
+    void printObject(){
+        
+        if(this->values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
+
+        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
+            std::cout << "{" << x->first << ", ";
+            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
+            std::cout << "}" << std::endl;
+        }
+
+        for(auto x = this->evals.begin(); x != this->evals.end(); x++){
+            std::cout << "eval: " << x->data() << std::endl;
+        }
+    }
+
+    friend std::map<std::string, var_t> getValues(Object obj);
+
 };
 
+std::map<std::string, var_t> getValues(Object obj){
 
-
-void printObject(Object o){
-        
-    if(o.values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
-
-    for(auto x = o.values_map.begin(); x != o.values_map.end(); x++){
-        std::cout << "{" << x->first << ", ";
-        std::visit([](auto &y){std::cout << y;}, o.values_map[x->first]);
-        std::cout << "}" << std::endl;
-    }
+    return obj.values_map;
 }
 
-//Object g_object;
+void _eval(std::string ev){
+        
+    g_evals.push_back(ev);
+    return;
+}
+
 value g_value;
 
 #define values g_value,
+
+#define eval(x) _eval(x)

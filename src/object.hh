@@ -16,6 +16,10 @@
 
 //using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
 std::vector<std::string> g_evals;
+std::vector<std::string> g_evals_cond;
+std::vector<std::string> g_calls;
+std::string tmp_cond ; 
+
 
 class value{
 
@@ -69,6 +73,8 @@ class Object{
     var_t value1;
     std::string index, assign_idx;
     std::vector<std::string> evals;
+    std::vector<std::string> evals_cond;
+    std::vector<std::string> calls;
     int communicate ;
 
 public:
@@ -133,6 +139,10 @@ public:
 
         values_map = keysMap;
         evals = g_evals;
+        evals_cond = g_evals_cond;
+        calls = g_calls ;
+        g_calls.clear();
+        g_evals_cond.clear();
         keysMap.clear();
         g_evals.clear();
         return *this;
@@ -159,14 +169,39 @@ public:
         }
     }
 
-    friend std::map<std::string, var_t> getValues(Object obj);
+    std::map<std::string, var_t> getValues(){
+        return this->values_map;
+    }
+
+    void set_communication(Object o){
+        for(auto x = this->calls.begin(); x != this->calls.end(); x++){
+            for ( auto y = o.getValues.begin() ; y != o.getValues.end(); y++){
+                if ( strcmp(x->data(),y->first) == 0 ){
+                    //tote shmainei oti brikame to analogo func("x->data()") sto rec object kai kanoume ta evals prwta kai meta return y->second
+                    //ekteloume kata seira ta eval_cond me index == cond
+                    //emvolemena sto eval_cond me index cond ekteloume ta evals me index cond 
+                    //telos kanoume return to value y-second 
+                    o.get_communication(*this);
+                }else{
+                    std::cout << " The messenger's function doesn't exist ";
+                }
+            }
+        }
+        return ;
+    }
+
+    void get_communication(Object o){
+        // o == msg object 
+        //*this == rec object 
+        //tha sindeei eval_cond kai eval me ta antistoixa functions tou msg object , dld to o 
+        return ;
+    }
 
 };
 
-std::map<std::string, var_t> getValues(Object obj){
 
-    return obj.values_map;
-}
+
+
 
 void _eval(std::string ev){
         
@@ -174,8 +209,23 @@ void _eval(std::string ev){
     return;
 }
 
+void _eval_cond(std::string ev){
+    tmp_cond = ev ;
+    //map me {tmp_cond,boolean} 
+    g_evals_cond.push_back(ev);
+    return;
+}
+
+void _call(std::string c){
+    //map me {tmp_cond,values} 
+    g_calls.push_back(c);
+    return ;
+}
+
 value g_value;
 
 #define values g_value,
 
 #define eval(x) _eval(x)
+#define eval_cond(x) _eval_cond(x)
+#define call(x) _call(x)

@@ -11,7 +11,6 @@
 #include <string.h>
 
 #define let auto
-#define none 0
 #define object Object()
 
 
@@ -70,7 +69,8 @@ value operator,(value val, var_t var){
 class Object{
 
     /**  */
-    std::map<std::string, var_t> values_map;
+    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> obj_values;
+    std::map<std::string, std::function<var_t(void)>> obj_funcs;
     var_t value1;
     std::string index, assign_idx;
     std::vector<std::string> evals;
@@ -92,30 +92,30 @@ public:
     }
 
     void operator=(var_t val){
-
+/*
         std::cout << "index: " << this->assign_idx << std::endl;
         std::cout <<"Operator = in Object " ;
         std::visit([](const auto &y){std::cout << y;}, val);
         std::cout << std::endl;
 
-        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
+        for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
             std::cout << "{" << x->first << ", ";
-            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
+            std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
             std::cout << "}" << std::endl;
         }
 
-        std::map<std::string, var_t>::iterator itr = values_map.find(assign_idx);      
+        std::map<std::string, var_t>::iterator itr = obj_values.find(assign_idx);      
 
-        if (itr != values_map.end())
+        if (itr != obj_values.end())
             itr->second = val;
         
-        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
+        for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
             std::cout << "{" << x->first << ", ";
-            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
+            std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
             std::cout << "}" << std::endl;
         }
 
-        //assign_idx.clear();
+        //assign_idx.clear();*/
 
         return;
     }
@@ -129,22 +129,24 @@ public:
         
         while((tmpv = val.qFront()) != (var_t)0){
             tmp = std::to_string(j);
-            values_map.insert({tmp, tmpv});
+            obj_values.insert({tmp, {tmpv , NULL}});
             j++;
         }
         
         return obj;
     }
 
-    Object operator[](std::map<std::string, var_t> keysMap){
+    Object operator[](std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> keys_map2){
 
-        values_map = keysMap;
-        evals = g_evals;
-        evals_cond = g_evals_cond;
+        obj_values = keys_map2;
+        obj_funcs = funcs_map;
+        // evals = g_evals;
+        // evals_cond = g_evals_cond;
         calls = g_calls ;
         g_calls.clear();
         g_evals_cond.clear();
-        keysMap.clear();
+        keys_map2.clear();
+        funcs_map.clear();
         g_evals.clear();
         return *this;
     }
@@ -155,23 +157,9 @@ public:
         return *this;
     }
 
-    void printObject(){
-        
-        if(this->values_map.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
 
-        for(auto x = this->values_map.begin(); x != this->values_map.end(); x++){
-            std::cout << "{" << x->first << ", ";
-            std::visit([](auto &y){std::cout << y;}, this->values_map[x->first]);
-            std::cout << "}" << std::endl;
-        }
-
-        for(auto x = this->evals.begin(); x != this->evals.end(); x++){
-            std::cout << "eval: " << x->data() << std::endl;
-        }
-    }
-
-    std::map<std::string, var_t> getValues(){
-        return this->values_map;
+    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> getValues(){
+        return (this->obj_values);
     }
 
     void set_communication(Object o){
@@ -224,6 +212,43 @@ void _call(std::string c){
     g_calls.push_back(c);
     return ;
 }
+
+ void printObject(std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> printMap){
+        
+    //     if(this->obj_values.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
+
+    //     for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
+    //         std::cout << "{" << x->first << ", ";
+    //         std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
+    //         std::cout << "}" << std::endl;
+    //     }
+
+    //     for(auto x = this->evals.begin(); x != this->evals.end(); x++){
+    //         std::cout << "eval: " << x->data() << std::endl;
+    //     }
+        
+        std::tuple<var_t, std::function<var_t(void)>> pr = printMap["0"]; 
+        std::visit([](auto &y){std::cout << y;}, std::get<1>(pr));
+
+        // for(auto pr =  printMap.begin()  ; pr != printMap.end() ; pr ++ ){
+        //     if(std::get<1>(pr->second)){
+            // for ( int j = 0 ; j < printMap.size() ; j ++ ){
+            //     std::string str = std::to_string(j);
+            //     pr = printMap[str];
+            //     std::visit([](auto &y){std::cout << y;}, std::get<1>(pr));
+            //     std::cout<<std::endl;
+                
+            // }
+        
+        //     }
+        //     else{
+        //         std::cout << "Func(" << pr->first << ") = ";
+        //         std::visit([](auto &y){std::cout << y;}, std::get<1>(printMap[pr->first]));
+        //         std::cout << std::endl;
+        //     }
+        // }
+        return;
+    }
 
 value g_value;
 

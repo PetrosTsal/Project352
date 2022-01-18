@@ -4,10 +4,15 @@
 #include <map>
 #include <iostream>
 #include <functional>
+#include <tuple>
+
+#define none 0
 
 using var_t = std::variant<int, double, std::string, bool, void*>;
 
 std::map<std::string, var_t> keys_map;
+std::map<std::string, std::function<var_t(void)>> funcs_map;
+std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> keys_map2 ;
 
 class Key{
 
@@ -23,10 +28,10 @@ public:
         return *this;
     }
     
-    std::map<std::string, var_t> operator=(var_t value){
+    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> operator=(var_t value){
         this->value = value;
-        keys_map.insert({this->key, this->value});
-        return keys_map;
+        keys_map2.insert({this->key, {this->value, NULL}});
+        return keys_map2;
     }
 
     // Key operator,(Key add){
@@ -56,8 +61,7 @@ public:
 class Func{
 
     std::string key;
-    var_t value;
-
+    
 public: 
     Func() {
 
@@ -68,10 +72,9 @@ public:
         return *this;
     }
 
-    std::map<std::string, var_t> operator=(std::function<var_t()> f){
-        this->value = f(); 
-        keys_map.insert({this->key, this->value});
-        return keys_map;
+    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> operator=(std::function<var_t(void)> f){
+        keys_map2.insert({this->key, {none, f}});
+        return keys_map2;
     }
 };
 

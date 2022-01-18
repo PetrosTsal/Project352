@@ -8,6 +8,7 @@
 #include <map>
 #include <unordered_map>
 #include "util.hh"
+#include <string.h>
 
 #define let auto
 #define none 0
@@ -15,8 +16,8 @@
 
 
 //using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
-std::vector<std::string> g_evals;
-std::vector<std::string> g_evals_cond;
+std::map<std::string, var_t> g_evals;
+std::map<std::string, bool> g_evals_cond;
 std::vector<std::string> g_calls;
 std::string tmp_cond ; 
 
@@ -175,15 +176,17 @@ public:
 
     void set_communication(Object o){
         for(auto x = this->calls.begin(); x != this->calls.end(); x++){
-            for ( auto y = o.getValues.begin() ; y != o.getValues.end(); y++){
-                if ( strcmp(x->data(),y->first) == 0 ){
+            for ( auto y = o.getValues().begin() ; y != o.getValues().end(); y++){
+                std::string s1 = x->data(), s2 = y->first;
+                if (s1 == s2){
                     //tote shmainei oti brikame to analogo func("x->data()") sto rec object kai kanoume ta evals prwta kai meta return y->second
                     //ekteloume kata seira ta eval_cond me index == cond
                     //emvolemena sto eval_cond me index cond ekteloume ta evals me index cond 
                     //telos kanoume return to value y-second 
                     o.get_communication(*this);
+                    return;
                 }else{
-                    std::cout << " The messenger's function doesn't exist ";
+                    std::cout << " The messenger's function doesn't exist in receiver object" << std::endl;
                 }
             }
         }
@@ -205,14 +208,14 @@ public:
 
 void _eval(std::string ev){
         
-    g_evals.push_back(ev);
+    g_evals.insert({ev, none});
     return;
 }
 
 void _eval_cond(std::string ev){
     tmp_cond = ev ;
     //map me {tmp_cond,boolean} 
-    g_evals_cond.push_back(ev);
+    g_evals_cond.insert({ev, 0});
     return;
 }
 

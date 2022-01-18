@@ -15,7 +15,7 @@
 
 
 //using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
-std::map<std::string, var_t> g_evals;
+std::map<std::string, var_t2> g_evals;
 std::map<std::string, bool> g_evals_cond;
 std::vector<std::string> g_calls;
 std::string tmp_cond ; 
@@ -195,11 +195,13 @@ public:
     
         for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
             std::cout << "{" << x->first << ", ";
-            if ( typeid(this->obj_values[x->first]) != typeid(std::function<var_t(void)>)){
+            if (int var = obj_values[x->first].index() != 1){
                 var_t tmp = std::get<var_t>(this->obj_values[x->first]);
                 std::visit([](const auto &y){std::cout << y;}, tmp);   
             }else{
-                //einai function 
+                std::function<var_t(void)> tmp = std::get<std::function<var_t(void)>>(this->obj_values[x->first]);
+                var_t(*const* ptr)(void) = tmp.target<var_t(*)(void)>();
+                std::cout << ptr;
             }
             
             std::cout << "}" << std::endl;

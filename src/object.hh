@@ -200,7 +200,6 @@ public:
                 std::visit([](const auto &y){std::cout << y;}, tmp);   
             }else{
                 //einai function 
-                
             }
             
             std::cout << "}" << std::endl;

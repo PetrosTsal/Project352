@@ -196,7 +196,10 @@ public:
         for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
             std::cout << "{" << x->first << ", ";
             if ( typeid(this->obj_values[x->first]) != typeid(std::function<var_t(void)>)){
-                var_t2 tmp = std::get<var_t>(this->obj_values[x->first]);
+                var_t tmp = std::get<var_t>(this->obj_values[x->first]);
+                std::visit([](const auto &y){std::cout << y;}, tmp);   
+            }else{
+                //einai function 
                 
             }
             

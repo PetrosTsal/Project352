@@ -19,6 +19,7 @@ std::map<std::string, var_t> g_evals;
 std::map<std::string, bool> g_evals_cond;
 std::vector<std::string> g_calls;
 std::string tmp_cond ; 
+std::tuple <var_t,std::function<var_t(void)>> val ;
 
 
 class value{
@@ -69,7 +70,7 @@ value operator,(value val, var_t var){
 class Object{
 
     /**  */
-    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> obj_values;
+    std::map<std::string, var_t2> obj_values;
     std::map<std::string, std::function<var_t(void)>> obj_funcs;
     var_t value1;
     std::string index, assign_idx;
@@ -129,23 +130,23 @@ public:
         
         while((tmpv = val.qFront()) != (var_t)0){
             tmp = std::to_string(j);
-            obj_values.insert({tmp, {tmpv , NULL}});
+            obj_values.insert({tmp, tmpv});
             j++;
         }
         
         return obj;
     }
 
-    Object operator[](std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> keys_map2){
+    Object operator[](std::map<std::string, var_t2> keys_map3){
 
-        obj_values = keys_map2;
+        obj_values = keys_map3;
         obj_funcs = funcs_map;
         // evals = g_evals;
         // evals_cond = g_evals_cond;
         calls = g_calls ;
         g_calls.clear();
         g_evals_cond.clear();
-        keys_map2.clear();
+        keys_map3.clear();
         funcs_map.clear();
         g_evals.clear();
         return *this;
@@ -158,7 +159,7 @@ public:
     }
 
 
-    std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> getValues(){
+    std::map<std::string, var_t2> getValues(){
         return (this->obj_values);
     }
 
@@ -188,6 +189,21 @@ public:
         return ;
     }
 
+    void printObject(){
+        
+        if(this->obj_values.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
+    
+        for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
+            std::cout << "{" << x->first << ", ";
+            if ( typeid(this->obj_values[x->first]) != typeid(std::function<var_t(void)>)){
+                var_t2 tmp = std::get<var_t>(this->obj_values[x->first]);
+                
+            }
+            
+            std::cout << "}" << std::endl;
+        }
+    }
+
 };
 
 
@@ -213,42 +229,7 @@ void _call(std::string c){
     return ;
 }
 
- void printObject(std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> printMap){
-        
-    //     if(this->obj_values.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
-
-    //     for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
-    //         std::cout << "{" << x->first << ", ";
-    //         std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
-    //         std::cout << "}" << std::endl;
-    //     }
-
-    //     for(auto x = this->evals.begin(); x != this->evals.end(); x++){
-    //         std::cout << "eval: " << x->data() << std::endl;
-    //     }
-        
-        std::tuple<var_t, std::function<var_t(void)>> pr = printMap["0"]; 
-        std::visit([](auto &y){std::cout << y;}, std::get<1>(pr));
-
-        // for(auto pr =  printMap.begin()  ; pr != printMap.end() ; pr ++ ){
-        //     if(std::get<1>(pr->second)){
-            // for ( int j = 0 ; j < printMap.size() ; j ++ ){
-            //     std::string str = std::to_string(j);
-            //     pr = printMap[str];
-            //     std::visit([](auto &y){std::cout << y;}, std::get<1>(pr));
-            //     std::cout<<std::endl;
-                
-            // }
-        
-        //     }
-        //     else{
-        //         std::cout << "Func(" << pr->first << ") = ";
-        //         std::visit([](auto &y){std::cout << y;}, std::get<1>(printMap[pr->first]));
-        //         std::cout << std::endl;
-        //     }
-        // }
-        return;
-    }
+ 
 
 value g_value;
 

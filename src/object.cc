@@ -20,7 +20,7 @@ int main(){
     // a["c"] = 3;
 
 
-    printObject(a.getValues());
+    b.printObject();
 
 
     //printObject(b);

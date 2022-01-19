@@ -13,14 +13,14 @@
 #define let auto
 #define object Object()
 
-
-//using var_t = std::variant<int, double, std::string, bool, void*>; // NA PROSTHESOYME OBJECT KAI FUNC
 std::map<std::string, var_t2> g_evals;
 std::map<std::string, bool> g_evals_cond;
 std::vector<std::string> g_calls;
 std::string tmp_cond ; 
-std::tuple <var_t,std::function<var_t(void)>> val ;
-
+std::tuple <var_t,std::function<var_t(void)>> val;
+bool in = 1;
+class Object ; 
+Object *msg_object, *rec_object;
 
 class value{
 
@@ -77,14 +77,15 @@ class Object{
     std::vector<std::string> evals;
     std::vector<std::string> evals_cond;
     std::vector<std::string> calls;
-    int communicate ;
+    int communicate;
+    bool initialized;
 
 public:
     /**  */
     Object(){
-        this->communicate = 0 ;
-        std::cout << "AN EMPTY OBJECT" << std::endl;
-
+        this->communicate = 0;
+        this->initialized = 0;
+        in = 0;
     }
 
     /**  */
@@ -140,14 +141,11 @@ public:
     Object operator[](std::map<std::string, var_t2> keys_map3){
 
         obj_values = keys_map3;
-        obj_funcs = funcs_map;
-        // evals = g_evals;
-        // evals_cond = g_evals_cond;
-        calls = g_calls ;
+        calls = g_calls;
+        in = 1;
         g_calls.clear();
         g_evals_cond.clear();
         keys_map3.clear();
-        funcs_map.clear();
         g_evals.clear();
         return *this;
     }
@@ -172,7 +170,7 @@ public:
                     //ekteloume kata seira ta eval_cond me index == cond
                     //emvolemena sto eval_cond me index cond ekteloume ta evals me index cond 
                     //telos kanoume return to value y-second 
-                    o.get_communication(*this);
+                    o.get_communication(*this , s1);
                     return;
                 }else{
                     std::cout << " The messenger's function doesn't exist in receiver object" << std::endl;
@@ -182,10 +180,15 @@ public:
         return ;
     }
 
-    void get_communication(Object o){
+    void get_communication(Object o , std::string ind){
         // o == msg object 
         //*this == rec object 
         //tha sindeei eval_cond kai eval me ta antistoixa functions tou msg object , dld to o 
+        if ( this->getValues()[ind].index() == 1 ){
+            std::function<var_t(void)> run = std::get<std::function<var_t(void)>>((*msg_object).getValues()[ind]);
+            var_t runvar = run() ; 
+        }
+    
         return ;
     }
 
@@ -208,37 +211,85 @@ public:
         }
     }
 
+    friend var_t _eval_cond(std::string ev);
+    friend var_t _eval(std::string ev);
+
 };
 
 
 
+void operator<<(Object rec, Object msg){
 
-
-void _eval(std::string ev){
-        
-    g_evals.insert({ev, none});
+    msg_object = new Object;
+    msg_object = &msg;
+    rec_object = new Object;
+    rec_object = &rec;
+    msg.set_communication(rec);
+    // delete(msg_object);
+    // delete(rec_object);
+    msg_object = nullptr;
+    rec_object = nullptr;
     return;
 }
 
-void _eval_cond(std::string ev){
-    tmp_cond = ev ;
-    //map me {tmp_cond,boolean} 
-    g_evals_cond.insert({ev, 0});
-    return;
+var_t _eval(std::string ev){
+    if(&rec_object == nullptr && &msg_object == nullptr ){
+        tmp_cond = ev; 
+        g_evals.insert({ev, 0});
+        return 0 ; 
+    }else{
+        var_t res ; 
+        for ( auto x = (*msg_object).getValues().begin() ; x != (*msg_object).getValues().end() ; x++ ){
+            if ( x->first == ev ){
+                if ( (*msg_object).getValues()[x->first].index() == 1 ){
+                    std::function<var_t(void)> tmp = std::get<std::function<var_t(void)>>((*msg_object).getValues()[x->first]);
+                    res = tmp() ; 
+                    (*rec_object).getValues()[x->first] = res  ;
+                    return  res ; // NA TSEKAROUME MIPWS THELEI CAST SE BOOL  NA EPISTREFEI H EVAL_COND
+                }else{
+                    std::cout << "ERROR FUNC(" << ev << ")" << "EXISTS AS VARIABLE IN MESSAGE OBJECT . " << std::endl ; 
+                }
+            }
+        }
+        std::cout << "ERROR FUNC(" << ev << ")" << "NOT EXISTS IN MESSAGE OBJECT . " << std::endl ; 
+    }
+    return -1; 
+}
+
+var_t _eval_cond(std::string ev){
+   
+   //NA TSEKAROUME TON ELEGXO SE INITIAL STATUS KAI EPIKOINWNIA 
+    if(&rec_object == nullptr && &msg_object == nullptr ){
+        tmp_cond = ev; 
+        g_evals_cond.insert({ev, 0});
+    }else{
+        var_t res ; 
+        for ( auto x = (*msg_object).getValues().begin() ; x != (*msg_object).getValues().end() ; x++ ){
+            if ( x->first == ev ){
+                if ( (*msg_object).getValues()[x->first].index() == 1 ){
+                    std::function<var_t(void)> tmp = std::get<std::function<var_t(void)>>((*msg_object).getValues()[x->first]);
+                    res = tmp() ; 
+                    (*rec_object).getValues()[x->first] = res  ;
+                    return  res ; // NA TSEKAROUME MIPWS THELEI CAST SE BOOL  NA EPISTREFEI H EVAL_COND
+                }else{
+                    std::cout << "ERROR FUNC(" << ev << ")" << "EXISTS AS VARIABLE IN MESSAGE OBJECT . " << std::endl ; 
+                }
+            }
+        }
+        std::cout << "ERROR FUNC(" << ev << ")" << "NOT EXISTS IN MESSAGE OBJECT . " << std::endl ; 
+    }
+    return 0 ; 
 }
 
 void _call(std::string c){
-    //map me {tmp_cond,values} 
+     
     g_calls.push_back(c);
     return ;
 }
 
- 
-
 value g_value;
 
 #define values g_value,
-
 #define eval(x) _eval(x)
 #define eval_cond(x) _eval_cond(x)
 #define call(x) _call(x)

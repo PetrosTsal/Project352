@@ -3,30 +3,23 @@
 
 int main(){
     
-    let a = object;
-    Object b;
-    b[values 1, 3.14, "hello"];
-    //b.printObject();
+    let a = object[ call("34"), 
+                    func("hello"){
+                        std::cout << "a object hello\n";
+                        return 1;}
+    ];  
 
-    //b["2"] = 25;
+    let c = object[  func("34"){
+                        std::cout << "C OBJECT 34\n";
+                        eval("hello");
+                        return 1;}
+    ];  
+   
 
-    a[  func("1"){return 1;},
-        func("2"){return 2;}
+    c << a ;
+   // a.printObject();
 
-    ];
-
-    // a["c"] = 2;
-    // //key("d") = [](){return 1;}
-    // a["c"] = 3;
-
-
-    a.printObject();
-
-
-    //printObject(b);
-
-
-
+    
     return 0;
 }
 

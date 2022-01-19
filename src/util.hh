@@ -79,6 +79,7 @@ public:
 
     std::map<std::string,var_t2> operator=(std::function<var_t(void)> f){
         keys_map3.insert({this->key, &f});
+        //var_t tmp = f() ; 
         return keys_map3;
     }
 };

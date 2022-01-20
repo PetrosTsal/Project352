@@ -22,9 +22,13 @@ bool in = 1;
 class Object ; 
 Object *msg_object, *rec_object;
 
+
+
+
+
 class value{
 
-    std::queue<var_t> values;
+    std::vector<var_t> values;
 
 public:
 
@@ -32,44 +36,40 @@ public:
 
     var_t qFront(){
         if(!values.empty()){
-            var_t tmp = values.front();
-             values.pop();
+            var_t tmp = values.back();
+            values.pop_back();
             return tmp;
         }
         else return 0;
     }
 
     void printVal(){
-        std::queue<var_t> values2 = values;
+        std::vector<var_t> values2 = values;
         if (values.empty())
             std::cout << "DE gemizei to values" << std::endl;
         while(!values2.empty()){
-            var_t tmp = values2.front();
-            std::visit([](const auto &y){std::cout << y;}, tmp);
-           std:: cout << std::endl;
-            values2.pop();
+            std:: cout << std::endl;
+            values2.pop_back();
         }
         return;
     }
 
     friend value operator,(value val, var_t var);
-
 };
 
 value operator,(value val, var_t var){
 
-        var_t tmp ;
-        val.values.push(var);
-        tmp = val.values.front();
-        
+        //var_t tmp ;
+        val.values.push_back(var);
+        //tmp = val.values.front();
 
         return val;
 }
 
-/**  */
+
+
 class Object{
 
-    /**  */
     std::map<std::string, var_t2> obj_values;
     std::map<std::string, std::function<var_t(void)>> obj_funcs;
     var_t value1;
@@ -81,14 +81,13 @@ class Object{
     bool initialized;
 
 public:
-    /**  */
+
     Object(){
         this->communicate = 0;
         this->initialized = 0;
         in = 0;
     }
 
-    /**  */
     ~Object(){
 
     }
@@ -123,21 +122,27 @@ public:
     }
 
     Object operator[](value val){
+
         std::cout<<"entered in this[]\n";
-        Object obj = *this;
-        int j = 0 ;
-        var_t tmpv;
-        std::string tmp = std::to_string(j);
         
+        int j = 0;
+        var_t tmpv;
+
+        std::string tmp = std::to_string(j);
+
         while((tmpv = val.qFront()) != (var_t)0){
+            std::visit([](const auto &y){std::cout << y;}, tmpv);
+            std::cout << std::endl;
             tmp = std::to_string(j);
-            obj_values.insert({tmp, tmpv});
+            keys_map3.insert({tmp, tmpv});
             j++;
         }
-       keys_map3.clear();
-        return obj;
+
+        obj_values = keys_map3;
+        keys_map3.clear();
+
+        return *this;
     }
-   
 
     Object operator[](std::map<std::string, var_t2> keys_map){
 
@@ -160,16 +165,12 @@ public:
         return *this;
     }
 
-
     std::map<std::string, var_t2> getValues(){
         return (this->obj_values);
     }
-
     
     friend void set_communication(Object* , Object *);
     friend void get_communication(Object* , std::string);
-
-    
 
     void printObject(){
         std::cout<<"Now entering printObject()\n";
@@ -196,14 +197,11 @@ public:
         }
     }
 
-
-
     friend bool _eval_cond(std::string ev);
     friend var_t _eval(std::string ev);
     friend var_t _arg(std::string ar) ;
     friend var_t _self(std::string sel) ;
     friend void printCopy(Object*);
-
 };
 
 
@@ -222,6 +220,9 @@ void printCopy(Object* cpy){
     }
     return ;
 }
+
+
+
 
 void get_communication(Object *rec , std::string ind){
         
@@ -260,6 +261,8 @@ void set_communication(Object* rec , Object* msg ){
 }
 
 
+
+
 void operator<<(Object rec, Object msg){
 
     msg_object = new Object;
@@ -276,6 +279,10 @@ void operator<<(Object rec, Object msg){
     rec_object = NULL;
     return;
 }
+
+
+
+
 
 var_t _eval(std::string ev){
     if(rec_object == NULL && msg_object == NULL ){
@@ -390,6 +397,10 @@ void _call(std::string c){
     g_calls.push_back(c);
     return ;
 }
+
+
+
+
 
 value g_value;
 

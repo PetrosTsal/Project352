@@ -49,7 +49,8 @@ int main(){
                             if ( eval_cond("34"))
                                 eval("hello");
                             return 0 ;
-                    }              
+                    },    
+                    key("1") = "ELA RE"          
     ];
 
     d<<c ;
@@ -57,9 +58,8 @@ int main(){
     g<<f ;
 
     
-  
-   let a = object[key("1") = 2 ,key("2") = 3];
-   a.printObject();
+    let a = object[values 1, 3.14, "hello", true];
+    g.printObject();
 
     return 0;
 }

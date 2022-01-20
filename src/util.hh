@@ -9,7 +9,7 @@
 #define none 0
 
 
-using var_t = std::variant<int, double,   std::string, bool >;
+using var_t = std::variant<int, double, std::string, bool, void*>;
 using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
 std::map<std::string, var_t> keys_map;
 std::map<std::string , var_t2 > keys_map3;

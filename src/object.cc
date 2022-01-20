@@ -3,23 +3,64 @@
 
 int main(){
     
-    let a = object[ call("34"), 
+   /* let a = object[ call("34"), 
                     func("hello"){
                         std::cout << "a object hello\n";
                         return 1;}
+    ];  */
+
+    let c = object[ key("y") = 2 , call("33"), func("34"){
+                        int r = std::get<int>(self("y")) ; 
+                        std::cout << "C OBJECT 34 from communication" << r << std::endl;
+                        return true;
+                        },
+                        func("hello"){
+                            std::cout<<"hello from communication\n" ; 
+                    
+                        return 1;}
+                        
     ];  
 
-    let c = object[  func("34"){
-                        std::cout << "C OBJECT 34\n";
-                        eval("hello");
-                        return 1;}
-    ];  
+    let d = object[ key("x")=1 , func("33"){
+                            int r = std::get<int>(arg("y")) ; 
+                            std::cout<<"Entered d Object " <<r <<std::endl;
+                            if ( eval_cond("34"))
+                                eval("hello");
+                            return 0 ;
+                    }              
+    ];
    
 
-    c << a ;
-   // a.printObject();
+    
+
+     let f = object[ call("33"), func("34"){
+                        std::cout << "f OBJECT 34 from communication\n";
+                        return true;
+                        },
+                        func("hello"){
+                            std::cout<<"hello from communication g\n" ; 
+                    
+                        return 1
+                        ;}
+    ];  
+
+    let g = object[ func("33"){
+                            std::cout<<"Entered g Object\n";
+                            if ( eval_cond("34"))
+                                eval("hello");
+                            return 0 ;
+                    }              
+    ];
+
+    d<<c ;
+
+    g<<f ;
 
     
+  
+   let a = object[key("1") = 2 ,key("2") = 3];
+   a.printObject();
+
     return 0;
 }
 

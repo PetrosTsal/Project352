@@ -8,14 +8,16 @@
 
 #define none 0
 
-using var_t = std::variant<int, double, std::string, bool, void*>;
 
-using var_t2 = std::variant<var_t , std::function<var_t(void)>>; 
-
+using var_t = std::variant<int, double,   std::string, bool >;
+using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
 std::map<std::string, var_t> keys_map;
 std::map<std::string , var_t2 > keys_map3;
 std::map<std::string, std::function<var_t(void)>> funcs_map;
 std::map<std::string, std::tuple<var_t, std::function<var_t(void)>>> keys_map2 ;
+
+
+
 
 class Key{
 
@@ -78,11 +80,13 @@ public:
     }
 
     std::map<std::string,var_t2> operator=(std::function<var_t(void)> f){
+
+        funcs_map.insert({this->key,f});
         keys_map3.insert({this->key, &f});
-        //var_t tmp = f() ; 
         return keys_map3;
     }
 };
+
 
 Key g_Key;
 Func g_Func;

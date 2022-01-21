@@ -14,7 +14,7 @@ using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
 
 
 
-std::map<std::string , var_t2> keys_map3;
+std::map<std::string , var_t2> keys_map;
 std::map<std::string, std::function<var_t(void)>> funcs_map;
 Object *msg_object, *rec_object;
 std::vector<std::string> g_calls;
@@ -25,7 +25,7 @@ std::string tmp_cond;
 class Key{
 
     std::string key;
-    var_t value;
+    var_t2 value;
 
 public:
 
@@ -38,12 +38,20 @@ public:
     }
 
     
-    std::map<std::string, var_t2> operator=(var_t value){
+    std::map<std::string, var_t2> operator=(var_t2 value){
+
         this->value = value;
-       
-        keys_map3.insert({this->key, this->value});
+
+        int idx = this->value.index();
+        if(idx != 0){
+            std::function<var_t(void)> f = std::get<std::function<var_t(void)>>(value);
+            funcs_map.insert({this->key, f});
+            keys_map.insert({this->key, &f});
+        }else
+            keys_map.insert({this->key, this->value});
+
         
-        return keys_map3;
+        return keys_map;
     }   
 };
 
@@ -69,8 +77,8 @@ public:
     std::map<std::string,var_t2> operator=(std::function<var_t(void)> f){
 
         funcs_map.insert({this->key,f});
-        keys_map3.insert({this->key, &f});
-        return keys_map3;
+        keys_map.insert({this->key, &f});
+        return keys_map;
     }
 };
 
@@ -154,12 +162,12 @@ public:
             tmpv = val.get_value();
             std::string tmp = std::to_string(j);
             tmp = std::to_string(j);
-            keys_map3.insert({tmp, tmpv});
+            keys_map.insert({tmp, tmpv});
             j--;
         }
 
-        obj_values = keys_map3;
-        keys_map3.clear();
+        obj_values = keys_map;
+        keys_map.clear();
 
         return *this;
     }
@@ -171,7 +179,7 @@ public:
         obj_funcs = funcs_map ; 
         calls = g_calls;
         g_calls.clear();
-        keys_map3.clear();
+        keys_map.clear();
         funcs_map.clear() ; 
         return *this;
 
@@ -189,6 +197,12 @@ public:
     std::map<std::string, var_t2> getValues(){
 
         return (this->obj_values);
+    }
+
+
+    Object ref(Object q){
+
+        return q ; 
     }
 
 
@@ -213,13 +227,14 @@ public:
         return;
     }
 
-    friend void set_communication(Object* , Object *);
 
     friend void get_communication(Object* , std::string);
 
-    friend bool _eval_cond(std::string ev);
+    friend void set_communication(Object* , Object *);
 
     friend var_t _eval(std::string ev);
+
+    friend bool _eval_cond(std::string ev);
 
     friend var_t _arg(std::string ar);
 
@@ -230,48 +245,6 @@ public:
     friend std::list<var_t> arguments_list();
 };
 
-
-
-std::ostream& operator<< (std::ostream& stream, const var_t &var){
-
-    var_t tmp = var;
-    
-    std::visit([](const auto &y){std::cout << y;}, tmp);
-    
-    return stream;
-}
-
-std::istream& operator>> (std::istream& stream, const var_t &var){
-
-    var_t tmp = var;
-
-    std::cin >> var;
-
-    return stream;
-}
-
-
-var_t input(std::string msg){
-
-    var_t in;
-
-    std::cout << msg << ": ";
-    std::cin >> in;
-
-    return in;
-}
-
-
-void printCopy(Object* cpy){
-    Object copy = *cpy ;
-    for(std::map<std::string, std::function<var_t(void)>>::iterator x  = copy.obj_funcs.begin(); x != copy.obj_funcs.end(); x++){
-            std::cout << "{" << x->first << ", " ;
-            std::function<var_t(void)> tmp = copy.obj_funcs[x->first];
-            var_t tmp2 = tmp(); 
-            std::cout<<"}\n";
-    }
-    return;
-}
 
 
 void get_communication(Object *rec , std::string ind){
@@ -307,21 +280,6 @@ void set_communication(Object* rec , Object* msg ){
         std::cout<<"INVALID SET_COMMUNICATION\n";
     }
     return ;
-}
-
-
-void operator<<(Object rec, Object msg){
-
-    msg_object = new Object;
-    msg_object = &msg;
-    rec_object = new Object;
-    rec_object = &rec;
-    set_communication(rec_object , msg_object);
-    rec = *rec_object ; 
-    msg = *msg_object ; 
-    msg_object = NULL;
-    rec_object = NULL;
-    return;
 }
 
 
@@ -428,7 +386,69 @@ void _call(std::string c){
 }
 
 
+std::ostream& operator<< (std::ostream& stream, const var_t &var){
+
+    var_t tmp = var;
+    
+    std::visit([](const auto &y){std::cout << y;}, tmp);
+    
+    return stream;
+}
+
+
+std::istream& operator>> (std::istream& stream, const var_t &var){
+
+    var_t tmp = var;
+
+    std::cin >> var;
+
+    return stream;
+}
+
+
+var_t input(std::string msg){
+
+    std::string in;
+
+    std::cout << msg << ": ";
+    std::cin >> in;
+
+    var_t newval ; 
+    reinterpret_cast<var_t&>(newval) = in;
+    
+    return newval;
+}
+
+
+void printCopy(Object* cpy){
+    Object copy = *cpy ;
+    for(std::map<std::string, std::function<var_t(void)>>::iterator x  = copy.obj_funcs.begin(); x != copy.obj_funcs.end(); x++){
+            std::cout << "{" << x->first << ", " ;
+            std::function<var_t(void)> tmp = copy.obj_funcs[x->first];
+            var_t tmp2 = tmp(); 
+            std::cout<<"}\n";
+    }
+    return;
+}
+
+
+void operator<<(Object rec, Object msg){
+
+    msg_object = new Object;
+    msg_object = &msg;
+    rec_object = new Object;
+    rec_object = &rec;
+    set_communication(rec_object , msg_object);
+    rec = *rec_object ; 
+    msg = *msg_object ; 
+    msg_object = NULL;
+    rec_object = NULL;
+    return;
+}
+
+
 std::list<var_t> arguments_list(){
+    
     std::cout<<"entered in arguments list \n";
     std::list<var_t> args ;
     for(std::map<std::string , var_t2>::iterator l = (*msg_object).obj_values.begin(); l != (*msg_object).obj_values.end(); l++){
@@ -458,3 +478,5 @@ value g_value;
 #define call(x) _call(x)
 #define arg(x) _arg(x)
 #define self(x) _self(x)
+#define args_list arguments_list()
+#define nl std::endl

@@ -1,28 +1,78 @@
 #include <iostream>
+#include <string>
 #include <vector>
 #include <queue>
-#include <string>
 #include <variant>
-#include <cstdarg>
-#include <iterator>
 #include <map>
-#include <unordered_map>
-#include "util.hh"
-#include <string.h>
+#include <functional>
 
-#define let auto
-#define object Object()
 
-std::map<std::string, var_t> g_evals;
-std::map<std::string, var_t> g_evals_cond;
-std::vector<std::string> g_calls;
-std::string tmp_cond ; 
-std::tuple <var_t,std::function<var_t(void)>> val;
-bool in = 1;
-class Object ; 
+
+using var_t = std::variant<int, double, std::string, bool, void*>;
+using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
+
+
+class Object;
+
+std::map<std::string , var_t2> keys_map3;
+std::map<std::string, std::function<var_t(void)>> funcs_map;
 Object *msg_object, *rec_object;
+std::vector<std::string> g_calls;
+std::string tmp_cond;  
 
 
+
+class Key{
+
+    std::string key;
+    var_t value;
+
+public:
+
+    Key(){}
+
+
+    Key operator()(std::string k){
+        this->key = k;
+        return *this;
+    }
+
+    
+    std::map<std::string, var_t2> operator=(var_t value){
+        this->value = value;
+       
+        keys_map3.insert({this->key, this->value});
+        
+        return keys_map3;
+    }   
+};
+
+
+
+class Func{
+
+    std::string key;
+    
+public: 
+
+    Func() {
+
+    }
+
+
+    Func operator()(std::string k){
+        this->key = k;
+        return *this;
+    }
+
+
+    std::map<std::string,var_t2> operator=(std::function<var_t(void)> f){
+
+        funcs_map.insert({this->key,f});
+        keys_map3.insert({this->key, &f});
+        return keys_map3;
+    }
+};
 
 
 
@@ -34,13 +84,18 @@ public:
 
     value(){}
 
-    var_t qFront(){
+    var_t get_value(){
         if(!values.empty()){
             var_t tmp = values.back();
             values.pop_back();
             return tmp;
         }
         else return 0;
+    }
+
+    size_t get_size(){
+
+        return this->values.size();
     }
 
     void printVal(){
@@ -59,9 +114,7 @@ public:
 
 value operator,(value val, var_t var){
 
-        //var_t tmp ;
         val.values.push_back(var);
-        //tmp = val.values.front();
 
         return val;
 }
@@ -72,70 +125,37 @@ class Object{
 
     std::map<std::string, var_t2> obj_values;
     std::map<std::string, std::function<var_t(void)>> obj_funcs;
-    var_t value1;
-    std::string index, assign_idx;
-    std::vector<std::string> evals;
-    std::vector<std::string> evals_cond;
     std::vector<std::string> calls;
-    int communicate;
-    bool initialized;
 
 public:
 
     Object(){
-        this->communicate = 0;
-        this->initialized = 0;
-        in = 0;
     }
+
 
     ~Object(){
 
     }
 
+
     void operator=(var_t val){
-/*
-        std::cout << "index: " << this->assign_idx << std::endl;
-        std::cout <<"Operator = in Object " ;
-        std::visit([](const auto &y){std::cout << y;}, val);
-        std::cout << std::endl;
 
-        for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
-            std::cout << "{" << x->first << ", ";
-            std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
-            std::cout << "}" << std::endl;
-        }
-
-        std::map<std::string, var_t>::iterator itr = obj_values.find(assign_idx);      
-
-        if (itr != obj_values.end())
-            itr->second = val;
-        
-        for(auto x = this->obj_values.begin(); x != this->obj_values.end(); x++){
-            std::cout << "{" << x->first << ", ";
-            std::visit([](auto &y){std::cout << y;}, this->obj_values[x->first]);
-            std::cout << "}" << std::endl;
-        }
-
-        //assign_idx.clear();*/
 
         return;
     }
 
-    Object operator[](value val){
 
-        std::cout<<"entered in this[]\n";
+    Object operator[](value val){
         
-        int j = 0;
+        int j = val.get_size() - 1;
         var_t tmpv;
 
-        std::string tmp = std::to_string(j);
-
-        while((tmpv = val.qFront()) != (var_t)0){
-            std::visit([](const auto &y){std::cout << y;}, tmpv);
-            std::cout << std::endl;
+        while(j >= 0){
+            tmpv = val.get_value();
+            std::string tmp = std::to_string(j);
             tmp = std::to_string(j);
             keys_map3.insert({tmp, tmpv});
-            j++;
+            j--;
         }
 
         obj_values = keys_map3;
@@ -144,84 +164,112 @@ public:
         return *this;
     }
 
+
     Object operator[](std::map<std::string, var_t2> keys_map){
 
         obj_values = keys_map;
         obj_funcs = funcs_map ; 
         calls = g_calls;
-        in = 1;
         g_calls.clear();
-        g_evals_cond.clear();
         keys_map3.clear();
         funcs_map.clear() ; 
-        g_evals.clear();
         return *this;
 
     }
 
-    Object operator[](std::string key){
+    
+    var_t & operator[](std::string key){
        
-        this->assign_idx = key;
-        return *this;
+        var_t &tmp = std::get<var_t>(this->obj_values[key]);
+
+        return tmp;
     }
+
 
     std::map<std::string, var_t2> getValues(){
+
         return (this->obj_values);
     }
-    
-    friend void set_communication(Object* , Object *);
-    friend void get_communication(Object* , std::string);
+
 
     void printObject(){
-        std::cout<<"Now entering printObject()\n";
-        if(this->obj_values.empty()) std::cout << "DE GEMIZEI RE MALAKA TO OBJECT" << std::endl;
-    
+
+        if(this->obj_values.empty()){
+            std::cout << "Empty object" << std::endl;
+            return;
+        }
+        
         for(std::map<std::string, var_t2>::iterator x  = this->obj_values.begin(); x != this->obj_values.end(); x++){
-            std::cout << "{" << x->first << ", " ;    
+            int idx = std::get<var_t>(this->obj_values[x->first]).index();
+            std::cout << "{" << x->first << ", " ;
             var_t tmp = std::get<var_t>(this->obj_values[x->first]);
             auto* str  = std::get_if<std::string>(&tmp);
-            if ( str != nullptr)
-                std::cout<<"it went here";
-                //std::cout<<*str;
-            std::visit([](const auto &y){std::cout << y;}, tmp);   
-            
-           
+            if(idx == 4)  
+                std::cout << "function with address: ";
+            std::visit([](const auto &y){std::cout << y;}, tmp);      
             std::cout << "}" << std::endl;
         }
 
-        for(std::map<std::string, std::function<var_t(void)>>::iterator x  = this->obj_funcs.begin(); x != this->obj_funcs.end(); x++){
-            std::cout << "{" << x->first << ", " ;
-            std::function<var_t(void)> tmp = this->obj_funcs[x->first];
-            var_t tmp2 = tmp(); 
-            std::cout<<"}\n";
-        }
+        return;
     }
 
+    friend void set_communication(Object* , Object *);
+
+    friend void get_communication(Object* , std::string);
+
     friend bool _eval_cond(std::string ev);
+
     friend var_t _eval(std::string ev);
-    friend var_t _arg(std::string ar) ;
-    friend var_t _self(std::string sel) ;
+
+    friend var_t _arg(std::string ar);
+
+    friend var_t _self(std::string sel);
+
     friend void printCopy(Object*);
 };
 
 
 
+std::ostream& operator<< (std::ostream& stream, const var_t &var){
 
+    var_t tmp = var;
+    
+    std::visit([](const auto &y){std::cout << y;}, tmp);
+    
+    return stream;
+}
+
+std::istream& operator>> (std::istream& stream, const var_t &var){
+
+    var_t tmp = var;
+
+    std::cin >> var;
+
+    return stream;
+}
+
+
+var_t input(std::string msg){
+
+    var_t in;
+
+    std::cout << msg << ": ";
+    std::cin >> in;
+
+    return in;
+}
 
 
 void printCopy(Object* cpy){
     Object copy = *cpy ;
-    std::cout<<"Now the copy object will be printed \n";
     for(std::map<std::string, std::function<var_t(void)>>::iterator x  = copy.obj_funcs.begin(); x != copy.obj_funcs.end(); x++){
             std::cout << "{" << x->first << ", " ;
             std::function<var_t(void)> tmp = copy.obj_funcs[x->first];
             var_t tmp2 = tmp(); 
             std::cout<<"}\n";
     }
-    return ;
+    return;
 }
-
-
 
 
 void get_communication(Object *rec , std::string ind){
@@ -238,16 +286,15 @@ void get_communication(Object *rec , std::string ind){
         return ;
     }
 
+
 void set_communication(Object* rec , Object* msg ){
    
-    std::cout<<"Starting connection between 2 Objects .\n";
     if (rec != NULL && msg != NULL){
         for(std::vector<std::string>::iterator x  = (*msg).calls.begin(); x != (*msg).calls.end(); x++){
             for ( std::map<std::string , std::function<var_t(void)>>::iterator y = (*rec).obj_funcs.begin() ; y != (*rec).obj_funcs.end(); y++){
                 std::string s1 = x->data(), s2 = y->first;
                 if (s1 == s2){
                     get_communication(rec , y->first);
-                    std::cout << "Terminating connection .\n" ; 
                     return;
                 }else{
                     std::cout << " The messenger's function doesn't exist in receiver object" << std::endl;
@@ -261,34 +308,24 @@ void set_communication(Object* rec , Object* msg ){
 }
 
 
-
-
 void operator<<(Object rec, Object msg){
 
     msg_object = new Object;
     msg_object = &msg;
     rec_object = new Object;
     rec_object = &rec;
-   // printCopy(msg_object);
     set_communication(rec_object , msg_object);
     rec = *rec_object ; 
     msg = *msg_object ; 
-    // delete(msg_object);
-    // delete(rec_object);
     msg_object = NULL;
     rec_object = NULL;
     return;
 }
 
 
-
-
-
 var_t _eval(std::string ev){
-    if(rec_object == NULL && msg_object == NULL ){
-        tmp_cond = ev; 
-        g_evals.insert({ev, 0});
-        return 0 ; 
+    if(rec_object == NULL && msg_object == NULL ){ 
+        return 0; 
     }else{
        if ( msg_object != NULL ){
             var_t res ;  
@@ -310,19 +347,18 @@ var_t _eval(std::string ev){
    
 }
 
+
 bool _eval_cond(std::string ev){
    
    //NA TSEKAROUME TON ELEGXO SE INITIAL STATUS KAI EPIKOINWNIA 
-    if(rec_object == NULL && msg_object == NULL ){
-        tmp_cond = ev; 
-        g_evals_cond.insert({ev, 0});
+    if(rec_object == NULL && msg_object == NULL){
+        return 0;
     }else{
-        if ( msg_object != NULL ){
+        if(msg_object != NULL){
             var_t res ;  
             for(std::map<std::string , std::function<var_t(void)>>::iterator x  = (*msg_object).obj_funcs.begin(); x != (*msg_object).obj_funcs.end(); x++){
-                if ( x->first == ev){
+                if (x->first == ev){
                     std::function<var_t(void)> tmp = (*msg_object).obj_funcs[x->first];
-                    //var_t res{tmp()}; 
                     res = tmp() ; 
                     (*msg_object).obj_values[x->first] = res ; 
                     return std::get<bool>(res) ; 
@@ -334,30 +370,20 @@ bool _eval_cond(std::string ev){
             std::cout<<"ERROR IN _EVAL_COND MSG_OBJECT == NULL \n";
         }
     }
-    return 0 ; 
-    /*var_t res ; 
-        for ( auto x = (*msg_object).getValues().begin() ; x != (*msg_object).getValues().end() ; x++ ){
-            if ( x->first == ev ){
-                if ( (*msg_object).getValues()[x->first].index() == 1 ){
-                    std::function<var_t(void)> tmp = std::get<std::function<var_t(void)>>((*msg_object).getValues()[x->first]);
-                    res = tmp() ; 
-                    (*rec_object).getValues()[x->first] = res  ;
-                    return  res ; // NA TSEKAROUME MIPWS THELEI CAST SE BOOL  NA EPISTREFEI H EVAL_COND
-                }else{
-                    std::cout << "ERROR FUNC(" << ev << ")" << "EXISTS AS VARIABLE IN MESSAGE OBJECT . " << std::endl ; 
-                }
-            }
-        }*/
+
+    return 0; 
 }
 
+
 var_t _arg(std::string ar){
-    if ( msg_object == NULL && rec_object == NULL){
+
+    if (msg_object == NULL && rec_object == NULL){
         return 0 ; 
     }else{
-        if ( msg_object != NULL ){
+        if (msg_object != NULL){
             var_t res ; 
             for(std::map<std::string , var_t2>::iterator x  = (*msg_object).obj_values.begin(); x != (*msg_object).obj_values.end(); x++){
-                if ( x->first == ar){
+                if (x->first == ar){
                     res =std::get<var_t>((*msg_object).obj_values[x->first]) ; 
                     return res ; 
                 }
@@ -371,7 +397,9 @@ var_t _arg(std::string ar){
     }
 }
 
+
 var_t _self(std::string sel){
+
     if ( msg_object == NULL && rec_object == NULL){
         return 0 ; 
     }else{
@@ -392,6 +420,7 @@ var_t _self(std::string sel){
     }
 }
 
+
 void _call(std::string c){
      
     g_calls.push_back(c);
@@ -399,11 +428,16 @@ void _call(std::string c){
 }
 
 
-
-
-
+Key g_Key;
+Func g_Func;
 value g_value;
 
+#define none 0
+#define let auto
+#define object Object()
+#define key(x) g_Key(x)
+#define lambda [](void)
+#define func(x) g_Func(x)=lambda
 #define values g_value,
 #define eval(x) _eval(x)
 #define eval_cond(x) _eval_cond(x)

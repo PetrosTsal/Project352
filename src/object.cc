@@ -3,12 +3,6 @@
 
 int main(){
     
-   /* let a = object[ call("34"), 
-                    func("hello"){
-                        std::cout << "a object hello\n";
-                        return 1;}
-    ];  */
-
     let c = object[ key("y") = 2 , call("33"), func("34"){
                         int r = std::get<int>(self("y")) ; 
                         std::cout << "C OBJECT 34 from communication" << r << std::endl;
@@ -53,15 +47,18 @@ int main(){
                     key("1") = "ELA RE"          
     ];
 
-    d<<c ;
+    //d<<c ;
 
-    g<<f ;
+    //g<<f ;
 
     
     let a = object[values 1, 3.14, "hello", true];
-    g.printObject();
+
+    //var_t x = input("x");
+
+    a["0"] = "yasu";
+
+    a.printObject();
 
     return 0;
-}
-
-// Kainourgio Key operator=(functional) kai ena map me keys kai functions 
+} 

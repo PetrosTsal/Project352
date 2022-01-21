@@ -51,8 +51,9 @@ int main(){
 
     //g<<f ;
 
+    let b = object[values 1, 2, 3];
     
-    let a = object[values 1, 3.14, "hello", true];
+    let a = object[values 1, 3.14, "hello"];
 
     //var_t x = input("x");
 

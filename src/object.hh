@@ -5,14 +5,14 @@
 #include <variant>
 #include <map>
 #include <functional>
+#include <list>
 
-
+class Object;
 
 using var_t = std::variant<int, double, std::string, bool, void*>;
 using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
 
 
-class Object;
 
 std::map<std::string , var_t2> keys_map3;
 std::map<std::string, std::function<var_t(void)>> funcs_map;
@@ -226,6 +226,8 @@ public:
     friend var_t _self(std::string sel);
 
     friend void printCopy(Object*);
+
+    friend std::list<var_t> arguments_list();
 };
 
 
@@ -376,14 +378,13 @@ bool _eval_cond(std::string ev){
 
 
 var_t _arg(std::string ar){
-
-    if (msg_object == NULL && rec_object == NULL){
+    if ( msg_object == NULL && rec_object == NULL){
         return 0 ; 
     }else{
-        if (msg_object != NULL){
+        if ( msg_object != NULL ){
             var_t res ; 
             for(std::map<std::string , var_t2>::iterator x  = (*msg_object).obj_values.begin(); x != (*msg_object).obj_values.end(); x++){
-                if (x->first == ar){
+                if ( x->first == ar){
                     res =std::get<var_t>((*msg_object).obj_values[x->first]) ; 
                     return res ; 
                 }
@@ -399,7 +400,6 @@ var_t _arg(std::string ar){
 
 
 var_t _self(std::string sel){
-
     if ( msg_object == NULL && rec_object == NULL){
         return 0 ; 
     }else{
@@ -428,9 +428,23 @@ void _call(std::string c){
 }
 
 
+std::list<var_t> arguments_list(){
+    std::cout<<"entered in arguments list \n";
+    std::list<var_t> args ;
+    for(std::map<std::string , var_t2>::iterator l = (*msg_object).obj_values.begin(); l != (*msg_object).obj_values.end(); l++){
+        var_t inp = std::get<var_t>((*msg_object).obj_values[l->first]) ; 
+        args.push_back(inp) ;
+    }
+    return args ; 
+}
+
+
+
 Key g_Key;
 Func g_Func;
 value g_value;
+
+
 
 #define none 0
 #define let auto

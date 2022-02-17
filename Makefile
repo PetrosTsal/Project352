@@ -2,7 +2,7 @@
 # Author George Kostomanolakis Dec. 15 2021
 
 # the name of your executable, change it to your liking
-TARGET = executable
+TARGET = object.exe
 
 # launches your target in terminal
 RUN = ./$(TARGET)
@@ -15,7 +15,7 @@ BUILD_DIR = bin
 
 # add more CompilerFLAGS as your project requires
 # change c++11 to c++14 or 17 etc.. to change c++ version
-CFLAGS = -std=c++11 -Wall -Wextra
+CFLAGS = -std=c++17 -Wall -Wextra
 
 # add libraries for your project here
 LDFLAGS = 
@@ -30,7 +30,7 @@ LDLIBS =
 INC = 
 
 # finds all your objects that corrispond to your .cpp files, system agnostic version
-OBJECTS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(wildcard $(SRC_DIR)/*.cpp))
+OBJECTS := $(patsubst $(SRC_DIR)/%.cc, $(BUILD_DIR)/%.o, $(wildcard $(SRC_DIR)/*.cc))
 
 .PHONY: all
 # makes build directory, updates your objects, builds your executable
@@ -43,7 +43,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) $(CFLAGS) -o $@ $(LOADLIBS) $(LDFLAGS) $(LDLIBS) $(INC)
 
 # builds your objects
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	$(CXX) $(CFLAGS) -c $< -o $@ $(LOADLIBS) $(LDFLAGS) $(LDLIBS) $(INC)
 
 # deletes your built objects and executable

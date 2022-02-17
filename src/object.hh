@@ -1,3 +1,4 @@
+/*author 4175 and 4128 */
 #include <iostream>
 #include <string>
 #include <vector>
@@ -6,6 +7,7 @@
 #include <map>
 #include <functional>
 #include <list>
+#include <ctype.h>
 
 class Object;
 
@@ -14,7 +16,7 @@ using var_t2 = std::variant<var_t , std::function<var_t(void)>>;
 
 
 
-std::map<std::string , var_t2> keys_map;
+std::map<std::string , var_t2> keys_map3;
 std::map<std::string, std::function<var_t(void)>> funcs_map;
 Object *msg_object, *rec_object;
 std::vector<std::string> g_calls;
@@ -25,7 +27,7 @@ std::string tmp_cond;
 class Key{
 
     std::string key;
-    var_t2 value;
+    var_t value;
 
 public:
 
@@ -38,20 +40,12 @@ public:
     }
 
     
-    std::map<std::string, var_t2> operator=(var_t2 value){
-
+    std::map<std::string, var_t2> operator=(var_t value){
         this->value = value;
-
-        int idx = this->value.index();
-        if(idx != 0){
-            std::function<var_t(void)> f = std::get<std::function<var_t(void)>>(value);
-            funcs_map.insert({this->key, f});
-            keys_map.insert({this->key, &f});
-        }else
-            keys_map.insert({this->key, this->value});
-
+       
+        keys_map3.insert({this->key, this->value});
         
-        return keys_map;
+        return keys_map3;
     }   
 };
 
@@ -77,8 +71,8 @@ public:
     std::map<std::string,var_t2> operator=(std::function<var_t(void)> f){
 
         funcs_map.insert({this->key,f});
-        keys_map.insert({this->key, &f});
-        return keys_map;
+        keys_map3.insert({this->key, &f});
+        return keys_map3;
     }
 };
 
@@ -106,16 +100,7 @@ public:
         return this->values.size();
     }
 
-    void printVal(){
-        std::vector<var_t> values2 = values;
-        if (values.empty())
-            std::cout << "DE gemizei to values" << std::endl;
-        while(!values2.empty()){
-            std:: cout << std::endl;
-            values2.pop_back();
-        }
-        return;
-    }
+    
 
     friend value operator,(value val, var_t var);
 };
@@ -162,25 +147,28 @@ public:
             tmpv = val.get_value();
             std::string tmp = std::to_string(j);
             tmp = std::to_string(j);
-            keys_map.insert({tmp, tmpv});
+            keys_map3.insert({tmp, tmpv});
             j--;
         }
 
-        obj_values = keys_map;
-        keys_map.clear();
-
+        this->obj_values = keys_map3;
+        this->obj_funcs = funcs_map ; 
+        this->calls = g_calls; 
+        keys_map3.clear();
+        funcs_map.clear();
+        g_calls.clear(); 
         return *this;
     }
 
 
     Object operator[](std::map<std::string, var_t2> keys_map){
 
-        obj_values = keys_map;
-        obj_funcs = funcs_map ; 
-        calls = g_calls;
-        g_calls.clear();
-        keys_map.clear();
-        funcs_map.clear() ; 
+        this->obj_values = keys_map;
+        this->obj_funcs = funcs_map ; 
+        this->calls = g_calls; 
+        keys_map3.clear();
+        funcs_map.clear() ;
+        g_calls.clear(); 
         return *this;
 
     }
@@ -200,41 +188,37 @@ public:
     }
 
 
-    Object ref(Object q){
-
-        return q ; 
-    }
-
-
     void printObject(){
-
+        std::cout<<"object [ ";
         if(this->obj_values.empty()){
-            std::cout << "Empty object" << std::endl;
+            std::cout << "Empty object ] \n" << std::endl;
             return;
         }
         
         for(std::map<std::string, var_t2>::iterator x  = this->obj_values.begin(); x != this->obj_values.end(); x++){
+            std::map<std::string, var_t2>::iterator end = x ; 
             int idx = std::get<var_t>(this->obj_values[x->first]).index();
-            std::cout << "{" << x->first << ", " ;
+            std::cout << " \" " << x->first << " \" : " ;
             var_t tmp = std::get<var_t>(this->obj_values[x->first]);
-            auto* str  = std::get_if<std::string>(&tmp);
+            
             if(idx == 4)  
                 std::cout << "function with address: ";
-            std::visit([](const auto &y){std::cout << y;}, tmp);      
-            std::cout << "}" << std::endl;
+            std::visit([](const auto &y){std::cout << y;}, tmp); 
+            if ( (++end) != this->obj_values.end())
+                std::cout << ",";
         }
-
+        std::cout<<" ];";
+        std::cout<<"\n\n";
         return;
     }
 
+    friend void set_communication(Object* , Object *);
 
     friend void get_communication(Object* , std::string);
 
-    friend void set_communication(Object* , Object *);
+    friend bool _eval_cond(std::string ev);
 
     friend var_t _eval(std::string ev);
-
-    friend bool _eval_cond(std::string ev);
 
     friend var_t _arg(std::string ar);
 
@@ -243,8 +227,57 @@ public:
     friend void printCopy(Object*);
 
     friend std::list<var_t> arguments_list();
+
+    friend var_t input(std::string) ; 
+
+   
 };
 
+
+std::ostream& operator<< (std::ostream& stream, const var_t &var){
+
+    var_t tmp = var;
+    
+    std::visit([](const auto &y){std::cout << y;}, tmp);
+
+    
+    return stream;
+}
+
+std::istream& operator>> (std::istream& stream, const var_t &var){
+
+    var_t tmp = var;
+
+    std::cin >> var;
+
+    return stream;
+}
+
+
+
+var_t input(std::string msg){
+
+    std::string in;
+
+    std::cout << msg << ": ";
+    std::cin >> in;
+    var_t newval ; 
+    reinterpret_cast<var_t&>(newval) = in;
+    
+    return newval;
+}
+
+
+void printCopy(Object* cpy){
+    Object copy = *cpy ;
+    for(std::map<std::string, std::function<var_t(void)>>::iterator x  = copy.obj_funcs.begin(); x != copy.obj_funcs.end(); x++){
+            std::cout << "{" << x->first << ", " ;
+            std::function<var_t(void)> tmp = copy.obj_funcs[x->first];
+            var_t tmp2 = tmp(); 
+            std::cout<<"}\n";
+    }
+    return;
+}
 
 
 void get_communication(Object *rec , std::string ind){
@@ -281,6 +314,9 @@ void set_communication(Object* rec , Object* msg ){
     }
     return ;
 }
+
+
+
 
 
 var_t _eval(std::string ev){
@@ -369,66 +405,35 @@ var_t _self(std::string sel){
                     return res ; 
                 }
             }
-            std::cout<<" ERROR IN arg(x) , X WASN'T FOUNT IN RECEIVER.\n" ;
+            std::cout<<" ERROR IN arg(x) , X WASN'T FOUNT IN RECEIVER. RETURNED -1 .\n" ;
             return -1 ; 
         }else{
-            std::cout<<" ERROR IN arg(x) , RECEIVER WASN'T FOUNT .\n" ;
+            std::cout<<" ERROR IN arg(x) , RECEIVER WASN'T FOUNT . RETURNED -1 .\n" ;
             return -1 ; 
         }
     }
 }
 
 
+
 void _call(std::string c){
-     
     g_calls.push_back(c);
     return ;
 }
 
 
-std::ostream& operator<< (std::ostream& stream, const var_t &var){
-
-    var_t tmp = var;
-    
-    std::visit([](const auto &y){std::cout << y;}, tmp);
-    
-    return stream;
-}
-
-
-std::istream& operator>> (std::istream& stream, const var_t &var){
-
-    var_t tmp = var;
-
-    std::cin >> var;
-
-    return stream;
-}
-
-
-var_t input(std::string msg){
-
-    std::string in;
-
-    std::cout << msg << ": ";
-    std::cin >> in;
-
-    var_t newval ; 
-    reinterpret_cast<var_t&>(newval) = in;
-    
-    return newval;
-}
-
-
-void printCopy(Object* cpy){
-    Object copy = *cpy ;
-    for(std::map<std::string, std::function<var_t(void)>>::iterator x  = copy.obj_funcs.begin(); x != copy.obj_funcs.end(); x++){
-            std::cout << "{" << x->first << ", " ;
-            std::function<var_t(void)> tmp = copy.obj_funcs[x->first];
-            var_t tmp2 = tmp(); 
-            std::cout<<"}\n";
+std::list<var_t> arguments_list(){
+    std::list<var_t> args ;
+    for(std::map<std::string , var_t2>::iterator l = (*msg_object).obj_values.begin(); l != (*msg_object).obj_values.end(); l++){
+        var_t inp = std::get<var_t>((*msg_object).obj_values[l->first]) ; 
+        args.push_back(inp) ;
     }
-    return;
+    return args ; 
+}
+
+Object ref(Object q){
+
+    return q ; 
 }
 
 
@@ -444,18 +449,6 @@ void operator<<(Object rec, Object msg){
     msg_object = NULL;
     rec_object = NULL;
     return;
-}
-
-
-std::list<var_t> arguments_list(){
-    
-    std::cout<<"entered in arguments list \n";
-    std::list<var_t> args ;
-    for(std::map<std::string , var_t2>::iterator l = (*msg_object).obj_values.begin(); l != (*msg_object).obj_values.end(); l++){
-        var_t inp = std::get<var_t>((*msg_object).obj_values[l->first]) ; 
-        args.push_back(inp) ;
-    }
-    return args ; 
 }
 
 
